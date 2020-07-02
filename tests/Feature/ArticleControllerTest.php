@@ -37,7 +37,7 @@ class ArticleControllerTest extends TestCase
             ->get(route('articles.create')); //actingAsメソッドは、引数として渡したUserモデルにてログインした状態を作り出します。
 
         // 3. レスポンスを「検証」
-        $response->assertStatus(200)
+        $response->assertStatus(400)
             ->assertViewIs('articles.create'); //記事投稿画面のビューが使用されているかをテストします。
     }
 }
