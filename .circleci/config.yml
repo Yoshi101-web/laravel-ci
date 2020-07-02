@@ -3,5 +3,58 @@ jobs:
   build:
     docker:
       - image: circleci/php:7.3-node-browsers
+      - image: circleci/postgres:11.6-alpine #CircleCIが提供しているPostgres 11.6のDockerイメージを指定
+        environment: #PostgreSQLのコンテナに対する環境変数
+          POSTGRES_DB: larasns
+          POSTGRES_USER: default
+          POSTGRES_PASSWORD: secret
+    environment:
+        APP_ENV: testing
+        DB_CONNECTION: pgsql
+        DB_HOST: localhost
+        DB_PORT: 5432
+        DB_DATABASE: larasns
+        DB_USERNAME: default
+        DB_PASSWORD: secret
     steps:
-      - run: echo "Hello World"
+        - checkout
+        - restore_cache: #保存されたキャッシュを復元します。
+            key: composer-v1-{{ checksum "composer.lock" }} #復元するキャッシュの名前を指定
+        - run: composer install -n --prefer-dist #Composerを使用してPHP関連パッケージをインストール
+        - save_cache: #keyに指定した名前でキャッシュを保存します。
+            key: composer-v1-{{ checksum "composer.lock" }} #CircleCIのテンプレート機能. {{ checksum "ファイル名" }}とすることで、ファイルをハッシュ化した値を算出
+            paths:  #保存するディレクトリ名やファイル名はpathsに指定
+              - vendor #ComposerによってPHP関連のパッケージがインストールされるディレクトリであるvendorを指定
+        - restore_cache:
+            key: npm-v1-{{ checksum "package-lock.json" }}  
+        - run:
+            name: npm ci #npmを使用してJavaScript関連パッケージ
+            #ifを逆さまに記述したfiは、if文の終わりを示しており、必須
+            #[ -d node_modules ]という書き方をすると、node_modulesというディレクトリが存在すればtrueを、存在しなければfalseを返します。
+            command: |
+              if [ ! -d node_modules ]; then 
+                npm ci
+              fi
+        - save_cache:
+            key: npm-v1-{{ checksum "package-lock.json" }}
+            paths:
+              - node_modules #pathsに指定したnode_modulesをキャッシュに保存
+        - run: npm run dev
+        - run:
+            name: get ready for postgres 
+
+              #aptは、Debian系のLinuxのパッケージ管理システム
+              #apt-get updateでパッケージの一覧情報を最新化
+              #sudoは、ルート権限で実行するために追加
+              #sudo apt-get install libpq-devで、libpq-devをインストールしています。これは次のpdo_pgsqlをインストール
+              #sudo docker-php-ext-install pdo_pgsqlでは、circleci/php:7.3-node-browsersのイメージに圧縮されて入っているpdo_pgsqlをインストール
+              #LaravelでPostgeSQLと接続するためには、このpdo_pgsqlが必要
+              #dockerize -wait tcp://localhost:5432 -timeout 1mは、circleci/php:7.3-node-browsersのコンテナからPostgreSQLのコンテナに通信できるかの確認
+            command: |
+                sudo apt-get update 
+                sudo apt-get install libpq-dev
+                sudo docker-php-ext-install pdo_pgsql
+                dockerize -wait tcp://localhost:5432 -timeout 1m
+        - run:
+            name: php test
+            command: vendor/bin/phpunit
