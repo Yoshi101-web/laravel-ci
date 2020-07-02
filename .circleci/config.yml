@@ -5,9 +5,9 @@ jobs:
       - image: circleci/php:7.3-node-browsers
       - image: circleci/postgres:11.6-alpine #CircleCIが提供しているPostgres 11.6のDockerイメージを指定
           environment:  #PostgreSQLのコンテナに対する環境変数
-            POSTGRES_DB: larasns
-            POSTGRES_USER: default
-            POSTGRES_PASSWORD: secret
+              POSTGRES_DB: larasns
+              POSTGRES_USER: default
+              POSTGRES_PASSWORD: secret
     environment:
         APP_ENV: testing
         DB_CONNECTION: pgsql
@@ -51,10 +51,10 @@ jobs:
             #LaravelでPostgeSQLと接続するためには、このpdo_pgsqlが必要
             #dockerize -wait tcp://localhost:5432 -timeout 1mは、circleci/php:7.3-node-browsersのコンテナからPostgreSQLのコンテナに通信できるかの確認
           command: |
-            sudo apt-get update 
-            sudo apt-get install libpq-dev
-            sudo docker-php-ext-install pdo_pgsql
-            dockerize -wait tcp://localhost:5432 -timeout 1m
+              sudo apt-get update 
+              sudo apt-get install libpq-dev
+              sudo docker-php-ext-install pdo_pgsql
+              dockerize -wait tcp://localhost:5432 -timeout 1m
       - run:
           name: php test
           command: vendor/bin/phpunit
