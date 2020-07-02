@@ -15,13 +15,13 @@ jobs:
       - restore_cache:
           key: npm-v1-{{ checksum "package-lock.json" }}  
       - run:
-        name: npm ci #npmを使用してJavaScript関連パッケージ
-        #ifを逆さまに記述したfiは、if文の終わりを示しており、必須
-        #[ -d node_modules ]という書き方をすると、node_modulesというディレクトリが存在すればtrueを、存在しなければfalseを返します。
-        command: |
-          if [ ! -d node_modules ]; then 
-            npm ci
-          fi 
+          name: npm ci #npmを使用してJavaScript関連パッケージ
+          #ifを逆さまに記述したfiは、if文の終わりを示しており、必須
+          #[ -d node_modules ]という書き方をすると、node_modulesというディレクトリが存在すればtrueを、存在しなければfalseを返します。
+          command: |
+            if [ ! -d node_modules ]; then 
+              npm ci
+            fi 
       - save_cache:
           key: npm-v1-{{ checksum "package-lock.json" }}
           paths:
