@@ -3,8 +3,8 @@ jobs:
   build:
     docker:
         - image: circleci/php:7.3-node-browsers
-        - image: circleci/postgres:11.6-alpine #CircleCIが提供しているPostgres 11.6のDockerイメージを指定
-            environment:  #PostgreSQLのコンテナに対する環境変数
+        - image: circleci/postgres:11.6-alpine
+            environment:
                 POSTGRES_DB: larasns
                 POSTGRES_USER: default
                 POSTGRES_PASSWORD: secret
