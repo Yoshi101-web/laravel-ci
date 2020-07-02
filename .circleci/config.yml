@@ -5,7 +5,16 @@ jobs:
       - image: circleci/php:7.3-node-browsers
     steps:
       - checkout
+      - restore_cache: #保存されたキャッシュを復元します。
+        key: composer-v1-{{ checksum "composer.lock" }} #復元するキャッシュの名前を指定
+
       - run: composer install -n --prefer-dist #Composerを使用してPHP関連パッケージをインストール
+
+      - save_cache: #keyに指定した名前でキャッシュを保存します。
+        key: composer-v1-{{ checksum "composer.lock" }} #CircleCIのテンプレート機能. {{ checksum "ファイル名" }}とすることで、ファイルをハッシュ化した値を算出
+        paths:  #保存するディレクトリ名やファイル名はpathsに指定
+          - vendor #ComposerによってPHP関連のパッケージがインストールされるディレクトリであるvendorを指定
+
       - run: npm ci  #npmを使用してJavaScript関連パッケージ
       - run: npm run dev
       - run:
